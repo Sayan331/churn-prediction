@@ -133,20 +133,25 @@ def plot_results(results, X_test, y_test):
     print("\nPlot saved to data/processed/model_comparison.png")
 
 
-def save_best_model(results):
-    """Save the best model pipeline to disk."""
+def save_best_model(results, X_train):
+    """Save the best model pipeline and feature column order to disk."""
     best_name = max(results, key=lambda k: results[k][1])
     best_pipeline = results[best_name][0]
     best_auc = results[best_name][1]
 
     os.makedirs('models', exist_ok=True)
-    model_path = 'models/best_model.pkl'
-    joblib.dump(best_pipeline, model_path)
+    
+    # Save model
+    joblib.dump(best_pipeline, 'models/best_model.pkl')
+    
+    # Save feature column order — critical for inference
+    joblib.dump(list(X_train.columns), 'models/feature_columns.pkl')
 
     print(f"\n{'='*50}")
     print(f"BEST MODEL: {best_name}")
     print(f"Test AUC-ROC: {best_auc:.4f}")
-    print(f"Saved to: {model_path}")
+    print(f"Saved to: models/best_model.pkl")
+    print(f"Feature columns saved to: models/feature_columns.pkl")
     print(f"{'='*50}")
 
     return best_name, best_pipeline
@@ -181,7 +186,7 @@ def main():
         results[name] = (pipeline, auc, y_pred, y_prob)
 
     plot_results(results, X_test, y_test)
-    best_name, best_pipeline = save_best_model(results)
+    best_name, best_pipeline = save_best_model(results, X_train)
 
     print("\nPhase 5 complete!")
     print("Best model saved — ready for API serving in Phase 6.")

@@ -51,6 +51,18 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     nominal_cols = ['contract_type', 'internet_service', 'payment_method']
     df = pd.get_dummies(df, columns=nominal_cols, drop_first=False)
 
+    # Ensure all expected dummy columns exist
+    # Critical for single-row predictions at inference time
+    expected_dummies = [
+        'contract_type_Month-to-month', 'contract_type_One year', 'contract_type_Two year',
+        'internet_service_DSL', 'internet_service_Fiber optic', 'internet_service_No',
+        'payment_method_Bank transfer (automatic)', 'payment_method_Credit card (automatic)',
+        'payment_method_Electronic check', 'payment_method_Mailed check'
+    ]
+    for col in expected_dummies:
+        if col not in df.columns:
+            df[col] = 0
+
     # ── 6. New features from EDA insights ────────────────────────
 
     # Avg monthly spend (total / tenure) — normalises for tenure length
